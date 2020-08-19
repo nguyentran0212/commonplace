@@ -54,7 +54,7 @@ $$
 
 Interestingly, this rate is smaller than the input rate, because as the quantity of the decaying stuff reduces, the rate slows down as well. 
 
-## The constant $e$
+## The constant e
 
 The more we shrink the period by adding more compounds, the  higher the compound growth. When the number of compounds $n$ approaches infinity, we also approaches the maximum compound growth. 
 
@@ -78,7 +78,7 @@ Now, let's assume that we are dealing with the growth rate of 50\% each period. 
 
 All of this calculation happens within 1 time period, whatever that is. If we have $x$ time periods of growth, then the growth would be $e^x$. Thus, bringing it all together, we reach equation \ref{eq:growth_to_e}.
 
-### Interesting observation regarding $e^x$
+### Interesting observation regarding e^x
 
 Recall that $x= r \times t$. Thus $e^x$ denotes the maximum compound growth at the rate $x$ over one period, or the rate of 100% over $x$ periods, or any mixture between these extremes. 
 

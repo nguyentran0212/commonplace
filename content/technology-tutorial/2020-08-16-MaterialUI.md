@@ -303,7 +303,7 @@ export default function Types() {
 
 
 
-### `@material-ui/system`
+### @material-ui/system
 
 This module provide style functions to building design systems. 
 
@@ -456,7 +456,7 @@ ReactDOM.render(<App />, document.querySelector('#app'));
 
 ### Create-React-App example:
 
-#### `/public/index.html` and `/public/manifest.json`
+#### /public/index.html and /public/manifest.json
 
 ```html
 <!DOCTYPE html>
@@ -524,7 +524,7 @@ ReactDOM.render(<App />, document.querySelector('#app'));
 
 
 
-#### `/src/index.js` and Theme Provider
+#### /src/index.js and Theme Provider
 
 ```jsx
 import React from 'react';
@@ -577,7 +577,7 @@ export default theme;
 
 
 
-#### `/src/App.js` and other components
+#### /src/App.js and other components
 
 ```jsx
 // This is /src/App.js
@@ -687,7 +687,7 @@ Material-UI is developed mobile-first, and then scale up components as necessary
 
 
 
-#### Generating dynamic `<meta>` tags on Server
+#### Generating dynamic meta tags on Server
 
 ```html
 <!DOCTYPE html>

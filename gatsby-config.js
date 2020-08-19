@@ -1,190 +1,109 @@
-const urljoin = require("url-join");
-const config = require("./data/SiteConfig");
-
-module.exports = {
-  pathPrefix: config.pathPrefix === "" ? "/" : config.pathPrefix,
-  siteMetadata: {
-    siteUrl: urljoin(config.siteUrl, config.pathPrefix),
-    rssMetadata: {
-      site_url: urljoin(config.siteUrl, config.pathPrefix),
-      feed_url: urljoin(config.siteUrl, config.pathPrefix, config.siteRss),
-      title: config.siteTitle,
-      description: config.siteDescription,
-      image_url: `${urljoin(
-        config.siteUrl,
-        config.pathPrefix
-      )}/logos/logo-200.png`,
-      copyright: config.copyright
+require("dotenv").config();
+const queries = require("./src/utils/algolia");
+const config = require("./config");
+const plugins = [
+  'gatsby-plugin-sitemap',
+  'gatsby-plugin-sharp',
+  {
+    resolve: `gatsby-plugin-layout`,
+    options: {
+        component: require.resolve(`./src/templates/docs.js`)
     }
   },
-  plugins: [
-    
-    "gatsby-plugin-react-helmet",
-    "gatsby-plugin-sass",
-    "gatsby-plugin-htaccess",
-    {
-      resolve: "gatsby-source-filesystem",
-      options: {
-        name: "assets",
-        path: `${__dirname}/static/`
-      }
-    },
-    {
-      resolve: "gatsby-source-filesystem",
-      options: {
-        name: "posts",
-        path: `${__dirname}/content/`
-      }
-    },
-    {
-      resolve: `gatsby-plugin-typography`,
-      options: {
-        pathToConfigModule: `src/utils/typography`,
-      },
-    },
-    {
-      resolve: "gatsby-transformer-remark",
-      options: {
-        plugins: [
-          {
-            resolve: "gatsby-remark-images",
-            options: {
-              maxWidth: 690
-            }
-          },
-          {
-            resolve: "gatsby-remark-responsive-iframe"
-          },
-          "gatsby-remark-prismjs",
-          "gatsby-remark-copy-linked-files",
-          "gatsby-remark-autolink-headers",
-          {
-            resolve: `gatsby-remark-katex`,
-            options: {
-              // Add any KaTeX options from https://github.com/KaTeX/KaTeX/blob/master/docs/options.md here
-              strict: `ignore`
-            }
-          }
-        ]
-      }
-    },
-    {
-      resolve: "gatsby-plugin-google-analytics",
-      options: {
-        trackingId: config.googleAnalyticsID
-      }
-    },
-    {
-      resolve: "gatsby-plugin-nprogress",
-      options: {
-        color: config.themeColor
-      }
-    },
-    "gatsby-plugin-sharp",
-    "gatsby-transformer-sharp",
-    "gatsby-plugin-catch-links",
-    "gatsby-plugin-twitter",
-    "gatsby-plugin-sitemap",
-    {
-      resolve: "gatsby-plugin-manifest",
-      options: {
-        name: config.siteTitle,
-        short_name: config.siteTitleShort,
-        description: config.siteDescription,
-        start_url: config.pathPrefix,
-        background_color: config.backgroundColor,
-        theme_color: config.themeColor,
-        display: "minimal-ui",
-        icons: [
-          {
-            src: '/logos/logo-48.png',
-            sizes: '48x48',
-            type: 'image/png',
-          },
-          {
-            src: '/logos/logo-1024.png',
-            sizes: '1024x1024',
-            type: 'image/png',
-          },
-        ],
-      }
-    },
-    "gatsby-plugin-offline",
-    {
-      resolve: "gatsby-plugin-feed",
-      options: {
-        setup(ref) {
-          const ret = ref.query.site.siteMetadata.rssMetadata;
-          ret.allMarkdownRemark = ref.query.allMarkdownRemark;
-          ret.generator = "GatsbyJS Advanced Starter";
-          return ret;
-        },
-        query: `
+  'gatsby-plugin-emotion',
+  'gatsby-plugin-react-helmet',
+  {
+    resolve: "gatsby-source-filesystem",
+    options: {
+      name: "docs",
+      path: `${__dirname}/content/`
+    }
+  },
+  {
+    resolve: 'gatsby-plugin-mdx',
+    options: {
+      gatsbyRemarkPlugins: [
         {
-          site {
-            siteMetadata {
-              rssMetadata {
-                site_url
-                feed_url
-                title
-                description
-                image_url
-                copyright
-              }
-            }
+          resolve: "gatsby-remark-images",
+          options: {
+            maxWidth: 1035,
+            sizeByPixelDensity: true
+          }
+        },
+        {
+          resolve: 'gatsby-remark-copy-linked-files'
+        },
+        {
+          resolve: `gatsby-remark-katex`,
+          options: {
+            // Add any KaTeX options from https://github.com/KaTeX/KaTeX/blob/master/docs/options.md here
+            strict: `ignore`
           }
         }
-      `,
-        feeds: [
-          {
-            serialize(ctx) {
-              const { rssMetadata } = ctx.query.site.siteMetadata;
-              return ctx.query.allMarkdownRemark.edges.map(edge => ({
-                categories: edge.node.frontmatter.tags,
-                date: edge.node.fields.date,
-                title: edge.node.frontmatter.title,
-                description: edge.node.excerpt,
-                url: rssMetadata.site_url + edge.node.fields.slug,
-                guid: rssMetadata.site_url + edge.node.fields.slug,
-                custom_elements: [
-                  { "content:encoded": edge.node.html },
-                  { author: config.userEmail }
-                ]
-              }));
-            },
-            query: `
-            {
-              allMarkdownRemark(
-                limit: 1000,
-                sort: { order: DESC, fields: [fields___date] },
-              ) {
-                edges {
-                  node {
-                    excerpt
-                    html
-                    timeToRead
-                    fields {
-                      slug
-                      date
-                    }
-                    frontmatter {
-                      title
-                      cover
-                      date
-                      categories
-                      tags
-                    }
-                  }
-                }
-              }
-            }
-          `,
-            output: config.siteRss,
-            title: config.siteRss
-          }
-        ]
-      }
+      ],
+      extensions: [".mdx", ".md"]
     }
-  ]
-};
+  },
+  {
+    resolve: `gatsby-plugin-gtag`,
+    options: {
+      // your google analytics tracking id
+      trackingId: config.gatsby.gaTrackingId,
+      // Puts tracking script in the head instead of the body
+      head: true,
+      // enable ip anonymization
+      anonymize: false,
+    },
+  },
+];
+// check and add algolia
+if (config.header.search && config.header.search.enabled && config.header.search.algoliaAppId && config.header.search.algoliaAdminKey) {
+  plugins.push({
+    resolve: `gatsby-plugin-algolia`,
+    options: {
+      appId: config.header.search.algoliaAppId, // algolia application id
+      apiKey: config.header.search.algoliaAdminKey, // algolia admin key to index
+      queries,
+      chunkSize: 10000, // default: 1000
+    }}
+  )
+}
+// check and add pwa functionality
+if (config.pwa && config.pwa.enabled && config.pwa.manifest) {
+  plugins.push({
+      resolve: `gatsby-plugin-manifest`,
+      options: {...config.pwa.manifest},
+  });
+  plugins.push({
+    resolve: 'gatsby-plugin-offline',
+    options: {
+      appendScript: require.resolve(`./src/custom-sw-code.js`),
+    },
+  });
+} else {
+  plugins.push('gatsby-plugin-remove-serviceworker');
+}
 
+// check and remove trailing slash
+if (config.gatsby && !config.gatsby.trailingSlash) {
+  plugins.push('gatsby-plugin-remove-trailing-slashes');
+}
+
+module.exports = {
+  pathPrefix: config.gatsby.pathPrefix,
+  siteMetadata: {
+    title: config.siteMetadata.title,
+    description: config.siteMetadata.description,
+    docsLocation: config.siteMetadata.docsLocation,
+    ogImage: config.siteMetadata.ogImage,
+    favicon: config.siteMetadata.favicon,
+    logo: { link: config.header.logoLink ? config.header.logoLink : '/', image: config.header.logo }, // backwards compatible
+    headerTitle: config.header.title,
+    githubUrl: config.header.githubUrl,
+    helpUrl: config.header.helpUrl,
+    tweetText: config.header.tweetText,
+    headerLinks: config.header.links,
+    siteUrl: config.gatsby.siteUrl,
+  },
+  plugins: plugins
+};

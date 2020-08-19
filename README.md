@@ -1,144 +1,146 @@
+# gatsby-gitbook-starter
 
-<div align="center">
-    <img src="static/logos/logo-200.png" alt="Logo" width='200px' height='200px'/>
-</div>
+Kick off your project with this starter to create a powerful/flexible docs/tutorial web apps.
 
-# Gatsby Markdown Blog Starter
+![gatsby-gitbook-starter](https://graphql-engine-cdn.hasura.io/learn-hasura/gatsby-gitbook-starter/assets/documentation_app_blog.png)
 
-A markdown blog starter with all you need features to start markdown blog.
-NOTE: this porject is a developed version of [Gatsby Advanced Starter](https://github.com/Vagr9K/gatsby-advanced-starter).
+## Motivation
 
-It aims to provide a minimal base for building advanced GatsbyJS powered Markdown blogs.
+We wanted to create a [GraphQL tutorial](https://learn.hasura.io) series. The content would be written by developers for various languages/frameworks and what better than writing it in Markdown! And since this is a tutorial series we also needed rich embeds, syntax highlighting and more customisations.
 
-It has a basic desgin using typography-theme-stow-lake theme.
+We also wanted to serve these tutorials in sub paths of [learn.hasura.io](https://learn.hasura.io). To serve all these requirements, we decided to use Gatsby + MDX (Markdown + JSX) to extend markdown and used a neat consistent theme like the one at [GitBook](https://www.gitbook.com) and deployed as docker containers.
 
+## 🔥 Features
+- Write using Markdown / [MDX](https://github.com/mdx-js/mdx)
+- GitBook style theme
+- Syntax Highlighting using Prism [`Bonus`: Code diff highlighting]
+- Search Integration with Algolia
+- Progressive Web App, Works Offline
+- Google Analytics Integration
+- Automatically generated sidebar navigation, table of contents, previous/next
+- Dark Mode toggle
+- Edit on Github
+- Fully customisable
+- Rich embeds and live code editor using MDX
+- Easy deployment: Deploy on Netlify / Now.sh / Docker
 
-## How can I use this?
+## 🔗 Live Demo
 
-If you are a newcomer to Gatsby who's interested in the implementations of most needed features, this is a great place to start.
+Here's a [live demo](https://learn.hasura.io/graphql/react)
 
-If you are interested in a foundation for building ultra-fast websites, you can use this project as a "minimal" starter.
+## 🚀 Quickstart
 
-[Demo website.](https://gatsby-markdown-blog-starter.netlify.com)
+Get started by running the following commands:
 
-## Features
-
-- Gatsby v2 support
-- Blazing fast loading times thanks to pre-rendered HTML and automatic chunk loading of JS files
-- Separate components for everything
-- High configurability:
-  - Bio section
-  - User social profiles
-  - Copyright information
-  - More!
-- Bio section
-  - Name
-  - Location
-  - Description
-  - Links
-  - Follow Me button
-- Posts in Markdown
-  - Code syntax highlighting
-  - Embed YouTube videos
-  - Embed Tweets
-- Typography
-- Prism syntax highlighter
-- Tags
-  - Separate page for posts under each tag
-- Categories
-  - Separate page for posts under each category
-- Google Analytics support
-- NPM scripts for GitHub Pages deployment
-- Htaccess ready deployment to apache server
-- Social features
-  - Twitter tweet button
-  - Facebook share/share count
-  - Reddit share/share count
-  - Google+ share button
-  - LinkedIn share button
-  - Telegram share button
-- SEO
-  - Sitemap generation
-  - robots.txt
-  - General description tags
-  - Schema.org JSONLD (Google Rich Snippets)
-  - OpenGraph Tags (Facebook/Google+/Pinterest)
-  - Twitter Tags (Twitter Cards)
-- RSS feeds
-- Loading progress for slow networks
-- Web App Manifest support (PWA)
-- Offline support
-- `/static/` and content folders are available to use with `gatsby-image` out of the box
-- Netlify deploy configuration
-- CSS Modules / sass support
-- Development tools
-  - ESLint for linting
-  - Prettier for code style
-  - Remark-Lint for linting Markdown
-  - write-good for linting English prose
-  - gh-pages for deploying to GitHub pages
-  - CodeClimate configuration file and badge
-
-## Getting Started
-
-Install this starter (assuming [Gatsby](https://github.com/gatsbyjs/gatsby/) is installed and updated) by running from your CLI:
-
-```sh
-gatsby new YourProjectName https://github.com/ammarjabakji/gatsby-markdown-blog-starter/
-npm run develop # or gatsby develop
+```
+$ git clone git@github.com:hasura/gatsby-gitbook-starter.git
+$ cd gatsby-gitbook-starter
+$ npm install
+$ npm start
 ```
 
-Or you can fork the project, make your changes there and merge new features when needed.
+Visit `http://localhost:8000/` to view the app.
 
-Alternatively:
+## 🔧 Configure
 
-```sh
-git clone https://github.com/ammarjabakji/gatsby-markdown-blog-starter/ YourProjectName # Clone the project
-cd YourProjectname
-rm -rf .git # So you can have your own changes stored in VCS.
-npm install # or yarn install
-npm run develop # or gatsby develop
+Write markdown files in `content` folder.
+
+Open `config.js` for templating variables. Broadly configuration is available for `gatsby`, `header`, `sidebar` and `siteMetadata`.
+
+- `gatsby` config for global configuration like 
+    - `pathPrefix` - Gatsby Path Prefix
+    - `siteUrl` - Gatsby Site URL
+    - `gaTrackingId` - Google Analytics Tracking ID
+
+- `header` config for site header configuration like
+    - `title` - The title that appears on the top left
+    - `githubUrl` - The Github URL for the docs website
+    - `helpUrl` - Help URL for pointing to resources
+    - `tweetText` - Tweet text
+    - `links` - Links on the top right
+    - `search` - Enable search and [configure Algolia](https://www.gatsbyjs.org/docs/adding-search-with-algolia/)
+
+- `sidebar` config for navigation links configuration
+    - `forcedNavOrder` for left sidebar navigation order. It should be in the format "/<filename>"
+    - `frontLine` - whether to show a front line at the beginning of a nested menu.(Collapsing capability would be turned of if this option is set to true)
+    - `links` - Links on the bottom left of the sidebar
+    - `ignoreIndex` - Set this to true if the index.md file shouldn't appear on the left sidebar navigation. Typically this can be used for landing pages.
+
+- `siteMetadata` config for website related configuration
+    - `title` - Title of the website
+    - `description` - Description of the website
+    - `ogImage` - Social Media share og:image tag
+    - `docsLocation` - The Github URL for Edit on Github
+
+- For sub nesting in left sidebar, create a folder with the same name as the top level `.md` filename and the sub navigation is auto-generated. The sub navigation is alphabetically ordered.
+
+### Algolia Configuration
+
+To setup Algolia, go to `config.js` and update the `search` object to look like the one below:
+
+```...,
+	"search": {
+		"enabled": true,
+		"indexName": "MY_INDEX_NAME",
+		"algoliaAppId": process.env.GATSBY_ALGOLIA_APP_ID,
+		"algoliaSearchKey": process.env.GATSBY_ALGOLIA_SEARCH_KEY,
+		"algoliaAdminKey": process.env.ALGOLIA_ADMIN_KEY
+	},
 ```
 
-## Configuration
+Values for Algolia App ID, Search Key, and Admin Key can be obtained from Algolia Dashboard with the right set of permissions. Replace `MY_INDEX_NAME` with the Algolia Index name of your choice. To build the Algolia index, you need to run `npm run build` which will do a gatsby build along with content indexing in Algolia.
 
-Edit the export object in `data/SiteConfig`:
+### Progressive Web App, Offline
 
-```js
-module.exports = {
-  siteTitle: "Gatsby Markdown Blog Starter", // Site title.
-  siteTitleShort: "GA Markdown Blog Starter", // Short site title for homescreen (PWA). Preferably should be under 12 characters to prevent truncation.
-  siteTitleAlt: "Gatsby Markdown Blog Starter", // Alternative site title for SEO.
-  siteLogo: "/logos/logo-1024.png", // Logo used for SEO and manifest.
-  siteUrl: "https://gatsby-markdown-blog-starter.netlify.com", // Domain of your website without pathPrefix.
-  pathPrefix: "/gatsby-markdown-blog-starter", // Prefixes all links. For cases when deployed to example.github.io/gatsby-advanced-starter/.
-  siteDescription: "A GatsbyJS stater with Advanced design in mind.", // Website description used for RSS feeds/meta description tag.
-  siteRss: "/rss.xml", // Path to the RSS file.
-  siteFBAppID: "189387411558234", // FB Application ID for using app insights
-  googleAnalyticsID: "UA-4633244-5", // GA tracking ID.
-  disqusShortname: "https-vagr9k-github-io-gatsby-advanced-starter", // Disqus shortname.
-  dateFromFormat: "YYYY-MM-DD", // Date format used in the frontmatter.
-  dateFormat: "DD/MM/YYYY", // Date format for display.
-  userName: "Advanced User", // Username to display in the Bio section.
-  userTwitter: "", // Optionally renders "Follow Me" in the Bio segment.
-  userGitHub:  "", // Add Github link to the footer section.
-  userLocation: "North Pole, Earth", // User location to display in the Bio section.
-  userAvatar: "https://api.adorable.io/avatars/150/test.png", // User avatar to display in the Bio section.
-  userDescription:
-    "Yeah, I like animals better than people sometimes... Especially dogs. Dogs are the best. Every time you come home, they act like they haven't seen you in a year. And the good thing about dogs... is they got different dogs for different people.", // User description to display in the Bio section.
-  copyright: "Copyright © 2019. Advanced User", // Copyright string for the footer of the website and RSS feed.
-  themeColor: "#c62828", // Used for setting manifest and progress theme colors.
-  backgroundColor: "#e0e0e0" // Used for setting manifest background color.
-};
+To enable PWA, go to `config.js` and update the `pwa` object to look like the one below:
+
+```
+   "pwa": {
+        "enabled": false, // disabling this will also remove the existing service worker.
+        "manifest": {
+            "name": "Gatsby Gitbook Starter",
+            "short_name": "GitbookStarter",
+            "start_url": "/",
+            "background_color": "#6b37bf",
+            "theme_color": "#6b37bf",
+            "display": "standalone",
+            "crossOrigin": "use-credentials",
+            icons: [
+                {
+                    src: "src/pwa-512.png",
+                    sizes: `512x512`,
+                    type: `image/png`,
+                },
+            ],
+        },
+    }
 ```
 
-You can also optionally set `pathPrefix`:
+## Live Code Editor
 
-```js
-module.exports = {
-  // Note: it must *not* have a trailing slash.
-  pathPrefix: "/gatsby-markdown-blog-starter" // Prefixes all links. For cases when deployed to example.github.io/gatsby-markdown-blog-starter/.
-};
+To render react components for live editing, add the `react-live=true` to the code section. For example:
+
+```javascript react-live=true
+<button>Edit my text</button>
 ```
 
-WARNING: Make sure to edit `static/robots.txt` to include your domain for the sitemap!
+In the above code, just add `javascript react-live=true` after the triple quote ``` to start rendering react components that can be edited by users.
+
+## 🤖 SEO friendly
+
+This is a static site and comes with all the SEO benefits. Configure meta tags like title and description for each markdown file using MDX Frontmatter
+
+```markdown
+---
+title: "Title of the page"
+metaTitle: "Meta Title Tag for this page"
+metaDescription: "Meta Description Tag for this page"
+---
+```
+
+Canonical URLs are generated automatically.
+
+## ☁️ Deploy
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/hasura/gatsby-gitbook-starter)
+

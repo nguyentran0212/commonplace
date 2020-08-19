@@ -1,149 +1,109 @@
-const path = require("path");
-const _ = require("lodash");
-const moment = require("moment");
-const siteConfig = require("./data/SiteConfig");
+const componentWithMDXScope = require('gatsby-plugin-mdx/component-with-mdx-scope');
 
-exports.onCreateNode = ({ node, actions, getNode }) => {
-  const { createNodeField } = actions;
-  let slug;
-  if (node.internal.type === "MarkdownRemark") {
-    const fileNode = getNode(node.parent);
-    const parsedFilePath = path.parse(fileNode.relativePath);
-    if (
-      Object.prototype.hasOwnProperty.call(node, "frontmatter") &&
-      Object.prototype.hasOwnProperty.call(node.frontmatter, "title")
-    ) {
-      slug = `/${_.kebabCase(node.frontmatter.title)}`;
-    } else if (parsedFilePath.name !== "index" && parsedFilePath.dir !== "") {
-      slug = `/${parsedFilePath.dir}/${parsedFilePath.name}/`;
-    } else if (parsedFilePath.dir === "") {
-      slug = `/${parsedFilePath.name}/`;
-    } else {
-      slug = `/${parsedFilePath.dir}/`;
-    }
+const path = require('path');
 
-    if (Object.prototype.hasOwnProperty.call(node, "frontmatter")) {
-      if (Object.prototype.hasOwnProperty.call(node.frontmatter, "slug"))
-        slug = `/${_.kebabCase(node.frontmatter.slug)}`;
-      if (Object.prototype.hasOwnProperty.call(node.frontmatter, "date")) {
-        const date = moment(node.frontmatter.date, siteConfig.dateFromFormat);
-        if (!date.isValid)
-          console.warn(`WARNING: Invalid date.`, node.frontmatter);
+const startCase = require('lodash.startcase');
 
-        createNodeField({
-          node,
-          name: "date",
-          value: date.toISOString()
-        });
-      }
-    }
-    createNodeField({ node, name: "slug", value: slug });
-  }
-};
+const config = require('./config');
 
-exports.createPages = async ({ graphql, actions }) => {
+exports.createPages = ({ graphql, actions }) => {
   const { createPage } = actions;
-  const postPage = path.resolve("src/templates/post.js");
-  const tagPage = path.resolve("src/templates/tag.js");
-  const categoryPage = path.resolve("src/templates/category.js");
 
-  const markdownQueryResult = await graphql(
-    `
-      {
-        allMarkdownRemark {
-          edges {
-            node {
-              fields {
-                slug
-              }
-              frontmatter {
-                title
-                tags
-                categories
-                date
+  return new Promise((resolve, reject) => {
+    resolve(
+      graphql(
+        `
+          {
+            allMdx {
+              edges {
+                node {
+                  fields {
+                    id
+                  }
+                  tableOfContents
+                  fields {
+                    slug
+                  }
+                }
               }
             }
           }
+        `
+      ).then(result => {
+        if (result.errors) {
+          console.log(result.errors); // eslint-disable-line no-console
+          reject(result.errors);
         }
-      }
-    `
-  );
 
-  if (markdownQueryResult.errors) {
-    console.error(markdownQueryResult.errors);
-    throw markdownQueryResult.errors;
-  }
-
-  const tagSet = new Set();
-  const categorySet = new Set();
-
-  const postsEdges = markdownQueryResult.data.allMarkdownRemark.edges;
-
-  postsEdges.sort((postA, postB) => {
-    const dateA = moment(
-      postA.node.frontmatter.date,
-      siteConfig.dateFromFormat
+        // Create blog posts pages.
+        result.data.allMdx.edges.forEach(({ node }) => {
+          createPage({
+            path: node.fields.slug ? node.fields.slug : '/',
+            component: path.resolve('./src/templates/docs.js'),
+            context: {
+              id: node.fields.id,
+            },
+          });
+        });
+      })
     );
-
-    const dateB = moment(
-      postB.node.frontmatter.date,
-      siteConfig.dateFromFormat
-    );
-
-    if (dateA.isBefore(dateB)) return 1;
-    if (dateB.isBefore(dateA)) return -1;
-
-    return 0;
   });
+};
 
-  postsEdges.forEach((edge, index) => {
-    if (edge.node.frontmatter.tags) {
-      edge.node.frontmatter.tags.forEach(tag => {
-        tagSet.add(tag);
+exports.onCreateWebpackConfig = ({ actions }) => {
+  actions.setWebpackConfig({
+    resolve: {
+      modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+      alias: {
+        $components: path.resolve(__dirname, 'src/components'),
+        buble: '@philpl/buble', // to reduce bundle size
+      },
+    },
+  });
+};
+
+exports.onCreateBabelConfig = ({ actions }) => {
+  actions.setBabelPlugin({
+    name: '@babel/plugin-proposal-export-default-from',
+  });
+};
+
+exports.onCreateNode = ({ node, getNode, actions }) => {
+  const { createNodeField } = actions;
+
+  if (node.internal.type === `Mdx`) {
+    const parent = getNode(node.parent);
+
+    let value = parent.relativePath.replace(parent.ext, '');
+
+    if (value === 'index') {
+      value = '';
+    }
+
+    if (config.gatsby && config.gatsby.trailingSlash) {
+      createNodeField({
+        name: `slug`,
+        node,
+        value: value === '' ? `/` : `/${value}/`,
+      });
+    } else {
+      createNodeField({
+        name: `slug`,
+        node,
+        value: `/${value}`,
       });
     }
 
-    if (edge.node.frontmatter.categories) {
-      edge.node.frontmatter.categories.forEach(category => {
-        categorySet.add(category)
-      })
-    }
+    createNodeField({
+      name: 'id',
+      node,
+      value: node.id,
+    });
 
-    const nextID = index + 1 < postsEdges.length ? index + 1 : 0;
-    const prevID = index - 1 >= 0 ? index - 1 : postsEdges.length - 1;
-    const nextEdge = postsEdges[nextID];
-    const prevEdge = postsEdges[prevID];
-
-    createPage({
-      path: edge.node.fields.slug,
-      component: postPage,
-      context: {
-        slug: edge.node.fields.slug,
-        nexttitle: nextEdge.node.frontmatter.title,
-        nextslug: nextEdge.node.fields.slug,
-        prevtitle: prevEdge.node.frontmatter.title,
-        prevslug: prevEdge.node.fields.slug
-      }
+    createNodeField({
+      name: 'title',
+      node,
+      value: node.frontmatter.title || startCase(parent.name),
     });
-  });
- // Generate link foreach tag page
-  tagSet.forEach(tag => {
-    createPage({
-      path: `/tags/${_.kebabCase(tag)}/`,
-      component: tagPage,
-      context: {
-        tag
-      }
-    });
-  });
-  // Generate link foreach category page
-  categorySet.forEach(category => {
-    createPage({
-      path: `/${_.kebabCase(category)}/`,
-      component: categoryPage,
-      context: {
-        category
-      }
-    });
-  });
+  }
 };
